@@ -97,14 +97,6 @@ sequenceDiagram
 3. O cliente paga no ambiente InfinitePay.
 4. O webhook dispara; o plugin confirma com `payment_check` antes de marcar o pedido como pago.
 
-## Segurança e handle
-
-O **handle** define **qual conta InfinitePay recebe** o valor. Quem alterar essa configuração no admin da loja pode direcionar pagamentos para outra tag — o mesmo tipo de risco de trocar credenciais em qualquer gateway WooCommerce.
-
-- Restrinja acesso ao painel (`manage_woocommerce`).
-- Confira o handle após cada deploy.
-- O cliente final **não** escolhe nem altera o handle no checkout.
-
 ## Estrutura do projeto
 
 ```
