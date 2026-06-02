@@ -25,6 +25,24 @@ Testado até WooCommerce **9.0**.
 
 Você também precisa de uma conta InfinitePay e da sua **InfiniteTag** (handle), configurada no app InfinitePay.
 
+## Download (ZIP pronto para instalar)
+
+O ZIP contém apenas os arquivos necessários para o plugin funcionar (sem documentação de desenvolvimento).
+
+| Forma | Link |
+|-------|------|
+| **Última release** | [Releases](https://github.com/leofelipet/infinitepay-for-woocommerce/releases/latest) — baixe `infinitepay-x.x.x.zip` |
+| **Build manual** | [Actions → Build plugin ZIP](https://github.com/leofelipet/infinitepay-for-woocommerce/actions/workflows/build-plugin-zip.yml) → *Run workflow* → artifact na execução |
+
+No WordPress: **Plugins → Adicionar novo → Enviar plugin** e selecione o `.zip`.
+
+Para publicar uma release com link fixo de download, crie uma tag no Git:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
 ## Instalação
 
 ### Via Git

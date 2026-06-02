@@ -1,0 +1,17 @@
+# Arquivos e pastas excluídos do ZIP de distribuição (só o necessário para rodar o plugin).
+.distignore
+.git
+.gitignore
+.github
+*.zip
+.cursor
+.idea
+.vscode
+node_modules
+vendor
+*.log
+.DS_Store
+AGENTS.md
+README.md
+readme.txt
+build
