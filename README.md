@@ -27,7 +27,7 @@ Você também precisa de uma conta InfinitePay e da sua **InfiniteTag** (handle)
 
 ## Instalação
 
-1. Baixe o ZIP da [última release](https://github.com/leofelipet/infinitepay-for-woocommerce/releases/latest) (`infinitepay-x.x.x.zip`). O pacote contém apenas os arquivos necessários para o plugin funcionar.
+1. Baixe o ZIP da [última release](https://github.com/leofelipet/infinitepay-for-woocommerce/releases/latest) (atualizada automaticamente a cada push na `main`).
 2. No WordPress, acesse **Plugins → Adicionar novo → Enviar plugin**.
 3. Selecione o arquivo `.zip` baixado e clique em **Instalar agora**.
 4. Após a instalação, clique em **Ativar plugin**.
