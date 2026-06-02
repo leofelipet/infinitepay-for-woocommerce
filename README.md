@@ -31,7 +31,13 @@ Você também precisa de uma conta InfinitePay e da sua **InfiniteTag** (handle)
 
 ```bash
 cd wp-content/plugins
-git clone <url-do-repositorio> infinitepay
+git clone git@github.com:leofelipet/infinitepay-for-woocommerce.git infinitepay
+```
+
+Ou via HTTPS:
+
+```bash
+git clone https://github.com/leofelipet/infinitepay-for-woocommerce.git infinitepay
 ```
 
 Ative o plugin em **WordPress → Plugins**.
