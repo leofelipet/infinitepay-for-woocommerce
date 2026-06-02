@@ -62,6 +62,8 @@ jobs:
           zip -r "../${SLUG}-${VERSION}.zip" "$SLUG"
           cd ..
 
+          cp "${SLUG}-${VERSION}.zip" "${SLUG}.zip"
+
           unzip -l "${SLUG}-${VERSION}.zip"
 
       - name: Upload ZIP artifact
@@ -97,7 +99,9 @@ jobs:
           tag_name: ${{ steps.release.outputs.tag }}
           name: ${{ steps.release.outputs.tag }}
           target_commitish: ${{ github.sha }}
-          files: infinitepay-${{ steps.version.outputs.version }}.zip
+          files: |
+            infinitepay-${{ steps.version.outputs.version }}.zip
+            infinitepay.zip
           make_latest: true
           body: |
             Versão **${{ steps.version.outputs.version }}** do plugin InfinitePay para WooCommerce.
