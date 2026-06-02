@@ -132,7 +132,8 @@ Antes de `payment_complete()`, verificar `_infinitepay_payment_confirmed === 'ye
 ## Compatibilidade WooCommerce
 
 - Declarar compatibilidade HPOS em `before_woocommerce_init` com `FeaturesUtil::declare_compatibility( 'custom_order_tables', ... )`
-- Gateway sem campos extras no checkout (redirect only) — funciona em Blocks e checkout clássico
+- Gateway sem campos extras no checkout (redirect only)
+- **WooCommerce Blocks:** registrar `InfinitePay_Blocks_Support` em `woocommerce_blocks_payment_method_type_registration` + script `assets/js/infinitepay-blocks.js` (obrigatório para aparecer no checkout em blocos)
 - Requer WooCommerce ativo
 
 ## Testes manuais

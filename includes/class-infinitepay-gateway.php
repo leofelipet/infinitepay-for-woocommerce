@@ -31,6 +31,7 @@ class InfinitePay_Gateway extends WC_Payment_Gateway {
 	 */
 	public static function init() {
 		add_filter( 'plugin_action_links_' . plugin_basename( INFINITEPAY_PLUGIN_FILE ), array( __CLASS__, 'plugin_action_links' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'admin_setup_notices' ) );
 	}
 
 	/**
@@ -115,13 +116,13 @@ class InfinitePay_Gateway extends WC_Payment_Gateway {
 				'title'       => __( 'URL do webhook', 'infinitepay' ),
 				'type'        => 'infinitepay_readonly_url',
 				'description' => __( 'Enviada à InfinitePay em cada pedido. Deve ser acessível publicamente (HTTPS).', 'infinitepay' ),
-				'url'         => self::get_webhook_url(),
+				'url_source'  => 'webhook',
 			),
 			'redirect_url' => array(
 				'title'       => __( 'URL de redirect', 'infinitepay' ),
 				'type'        => 'infinitepay_readonly_url',
 				'description' => __( 'Página de pedido recebido (thank you). O WooCommerce substitui {order_id} e adiciona a chave do pedido em cada compra.', 'infinitepay' ),
-				'url'         => self::get_redirect_url_pattern(),
+				'url_source'  => 'redirect',
 			),
 			'debug'       => array(
 				'title'       => __( 'Log de depuração', 'infinitepay' ),
@@ -131,6 +132,60 @@ class InfinitePay_Gateway extends WC_Payment_Gateway {
 				'description' => __( 'WooCommerce → Status → Logs', 'infinitepay' ),
 			),
 		);
+	}
+
+	/**
+	 * Show admin notices when the gateway is not ready for checkout.
+	 */
+	public static function admin_setup_notices() {
+		if ( ! current_user_can( 'manage_woocommerce' ) || ! function_exists( 'WC' ) || ! WC() ) {
+			return;
+		}
+
+		$gateways = WC()->payment_gateways()->payment_gateways();
+		if ( empty( $gateways['infinitepay'] ) || ! $gateways['infinitepay'] instanceof self ) {
+			echo '<div class="notice notice-error"><p>';
+			echo esc_html__( 'O gateway InfinitePay não foi carregado. Verifique wp-content/debug.log por erros PHP no plugin.', 'infinitepay' );
+			echo '</p></div>';
+			return;
+		}
+
+		$gateway = $gateways['infinitepay'];
+		$url     = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=infinitepay' );
+
+		if ( 'yes' !== $gateway->enabled ) {
+			echo '<div class="notice notice-warning"><p>';
+			printf(
+				/* translators: %s: settings URL */
+				wp_kses_post( __( 'O InfinitePay não está ativo no checkout. <a href="%s">Ative em WooCommerce → Ajustes → Pagamentos → InfinitePay</a>.', 'infinitepay' ) ),
+				esc_url( $url )
+			);
+			echo '</p></div>';
+			return;
+		}
+
+		if ( ! $gateway->get_handle() ) {
+			echo '<div class="notice notice-warning"><p>';
+			printf(
+				/* translators: %s: settings URL */
+				wp_kses_post( __( 'Informe o Handle (InfiniteTag) do InfinitePay para exibir o método no checkout. <a href="%s">Abrir configurações</a>.', 'infinitepay' ) ),
+				esc_url( $url )
+			);
+			echo '</p></div>';
+		}
+	}
+
+	/**
+	 * Only show at checkout when enabled and configured.
+	 *
+	 * @return bool
+	 */
+	public function is_available() {
+		if ( 'yes' !== $this->enabled || ! $this->get_handle() ) {
+			return false;
+		}
+
+		return parent::is_available();
 	}
 
 	/**
@@ -173,9 +228,17 @@ class InfinitePay_Gateway extends WC_Payment_Gateway {
 			'title'       => '',
 			'description' => '',
 			'url'         => '',
+			'url_source'  => '',
 		);
 		$data = wp_parse_args( $data, $defaults );
-		$url  = (string) $data['url'];
+
+		if ( 'webhook' === $data['url_source'] ) {
+			$url = self::get_webhook_url();
+		} elseif ( 'redirect' === $data['url_source'] ) {
+			$url = self::get_redirect_url_pattern();
+		} else {
+			$url = (string) $data['url'];
+		}
 
 		ob_start();
 		?>

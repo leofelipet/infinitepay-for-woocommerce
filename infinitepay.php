@@ -50,27 +50,30 @@ add_action(
 );
 
 /**
- * Bootstrap gateway when WooCommerce is available.
+ * Bootstrap after WooCommerce is fully loaded (load order safe).
+ */
+add_action( 'woocommerce_loaded', 'infinitepay_init' );
+
+/**
+ * Admin notice when WooCommerce is missing.
  */
 add_action(
-	'plugins_loaded',
-	'infinitepay_init',
-	11
+	'admin_notices',
+	static function () {
+		if ( class_exists( 'WooCommerce' ) || ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+		echo '<div class="notice notice-error"><p>';
+		echo esc_html__( 'InfinitePay para WooCommerce requer o WooCommerce ativo.', 'infinitepay' );
+		echo '</p></div>';
+	}
 );
 
 /**
  * Initialize plugin classes and gateway registration.
  */
 function infinitepay_init() {
-	if ( ! class_exists( 'WooCommerce' ) || ! class_exists( 'WC_Payment_Gateway' ) ) {
-		add_action(
-			'admin_notices',
-			static function () {
-				echo '<div class="notice notice-error"><p>';
-				echo esc_html__( 'InfinitePay para WooCommerce requer o WooCommerce ativo.', 'infinitepay' );
-				echo '</p></div>';
-			}
-		);
+	if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
 		return;
 	}
 
@@ -78,9 +81,29 @@ function infinitepay_init() {
 	require_once INFINITEPAY_PLUGIN_DIR . 'includes/class-infinitepay-order.php';
 	require_once INFINITEPAY_PLUGIN_DIR . 'includes/class-infinitepay-webhook.php';
 	require_once INFINITEPAY_PLUGIN_DIR . 'includes/class-infinitepay-gateway.php';
+	require_once INFINITEPAY_PLUGIN_DIR . 'includes/class-infinitepay-blocks-support.php';
+
+	add_filter( 'woocommerce_payment_gateways', 'infinitepay_register_gateway' );
 
 	InfinitePay_Webhook::init();
 	InfinitePay_Gateway::init();
+	infinitepay_register_blocks_support();
+}
+
+/**
+ * Register payment method with WooCommerce Blocks checkout.
+ */
+function infinitepay_register_blocks_support() {
+	if ( ! class_exists( '\Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+		return;
+	}
+
+	add_action(
+		'woocommerce_blocks_payment_method_type_registration',
+		static function ( $payment_method_registry ) {
+			$payment_method_registry->register( new InfinitePay_Blocks_Support() );
+		}
+	);
 }
 
 /**
@@ -93,5 +116,3 @@ function infinitepay_register_gateway( $methods ) {
 	$methods[] = 'InfinitePay_Gateway';
 	return $methods;
 }
-
-add_filter( 'woocommerce_payment_gateways', 'infinitepay_register_gateway' );
