@@ -1,65 +1,160 @@
 # InfinitePay para WooCommerce
 
-Gateway de pagamento para [WooCommerce](https://woocommerce.com/) usando o [Checkout Integrado InfinitePay](https://www.infinitepay.io/checkout-documentacao) — PIX e cartão com redirect, webhook e confirmação via API.
+Plugin WordPress que adiciona um **gateway de pagamento** ao WooCommerce usando o [Checkout Integrado InfinitePay](https://www.infinitepay.io/checkout-documentacao). Sua loja gera o pedido; o cliente paga com **PIX** ou **cartão** no checkout hospedado da InfinitePay; o WooCommerce recebe a confirmação automaticamente.
+
+## Recursos
+
+- Redirect para checkout InfinitePay (modelo oficial da API)
+- Confirmação de pagamento via **webhook** + validação **`payment_check`**
+- Fallback na página de pedido recebido (thank you)
+- Compatível com **WooCommerce Blocks** e checkout clássico
+- Compatível com **HPOS** (High-Performance Order Storage)
+- Pré-preenchimento de dados do comprador e endereço
+- URLs de webhook e redirect exibidas no painel
+- Log de depuração integrado ao WooCommerce (`source: infinitepay`)
 
 ## Requisitos
 
-| Requisito | Versão mínima |
-|-----------|----------------|
-| WordPress | 6.0 |
-| PHP | 7.4 |
-| WooCommerce | 7.0 |
+| Tecnologia   | Versão mínima |
+|--------------|---------------|
+| WordPress    | 6.0           |
+| PHP          | 7.4           |
+| WooCommerce  | 7.0           |
 
-Testado com WooCommerce até **9.0**. Compatível com **checkout em blocos** e **HPOS**.
+Testado até WooCommerce **9.0**.
+
+Você também precisa de uma conta InfinitePay e da sua **InfiniteTag** (handle), configurada no app InfinitePay.
 
 ## Instalação
 
-1. Clone ou copie este repositório para `wp-content/plugins/infinitepay`.
-2. Ative **InfinitePay para WooCommerce** em *Plugins*.
-3. Em *WooCommerce → Ajustes → Pagamentos → InfinitePay*:
-   - Ative o gateway
-   - Informe seu **Handle** (InfiniteTag, sem `$`)
-   - Anote a **URL do webhook** para uso na InfinitePay
+### Via Git
 
-## Fluxo de pagamento
+```bash
+cd wp-content/plugins
+git clone <url-do-repositorio> infinitepay
+```
 
-1. Cliente finaliza o pedido no WooCommerce (`pending`).
-2. Plugin cria link via `POST https://api.checkout.infinitepay.io/links`.
-3. Cliente paga na InfinitePay (PIX ou cartão).
-4. Webhook + `payment_check` confirmam o pagamento → pedido `processing` / `completed`.
+Ative o plugin em **WordPress → Plugins**.
+
+### Manual
+
+1. Baixe ou copie a pasta `infinitepay` para `wp-content/plugins/`.
+2. Ative **InfinitePay para WooCommerce**.
+3. Certifique-se de que o **WooCommerce** está instalado e ativo.
 
 ## Configuração
 
-| Campo | Descrição |
-|-------|-----------|
-| Handle | Sua InfiniteTag no app InfinitePay |
-| URL do webhook | Endpoint fixo da loja (`wc-api=infinitepay`) |
-| URL de redirect | Thank-you page por pedido |
-| Debug | Logs em *WooCommerce → Status → Logs* (source: `infinitepay`) |
+Acesse **WooCommerce → Ajustes → Pagamentos → InfinitePay**.
 
-## Estrutura
+| Campo | O que é |
+|-------|---------|
+| **Ativar InfinitePay** | Exibe o método no checkout |
+| **Handle (InfiniteTag)** | Seu usuário no app InfinitePay, **sem** o `$` |
+| **Título / Descrição** | Texto exibido ao cliente no checkout |
+| **URL do webhook** | Endpoint fixo da loja (somente leitura) — use na InfinitePay |
+| **URL de redirect** | Padrão da página “pedido recebido” por pedido |
+| **Log de depuração** | Registra requisições em *WooCommerce → Status → Logs* |
+
+### Checklist pós-instalação
+
+1. Ativar o gateway e salvar o handle correto.
+2. Fazer um pedido de teste com **valor baixo**.
+3. Confirmar que o pedido fica `pending` e redireciona para a InfinitePay.
+4. Após pagar, verificar se o pedido vai para `processing` ou `completed`.
+5. Em ambiente local, use túnel (ngrok, Local Connect, etc.) se precisar testar o webhook.
+
+## Como funciona
+
+```mermaid
+sequenceDiagram
+    participant Cliente
+    participant WooCommerce
+    participant Plugin
+    participant API as InfinitePay_API
+    participant Checkout as Checkout_InfinitePay
+
+    Cliente->>WooCommerce: Finalizar pedido
+    WooCommerce->>Plugin: process_payment
+    Plugin->>API: POST /links
+    API-->>Plugin: link de pagamento
+    Plugin-->>Cliente: Redirect
+    Cliente->>Checkout: Paga PIX ou cartão
+    Checkout->>Plugin: Webhook
+    Plugin->>API: POST /payment_check
+    API-->>Plugin: paid true
+    Plugin->>WooCommerce: payment_complete
+    Checkout-->>Cliente: Retorno à loja
+```
+
+1. O pedido WooCommerce é criado como **aguardando pagamento**.
+2. O plugin chama `https://api.checkout.infinitepay.io/links` com handle, itens (centavos), `order_nsu`, webhook e redirect.
+3. O cliente paga no ambiente InfinitePay.
+4. O webhook dispara; o plugin confirma com `payment_check` antes de marcar o pedido como pago.
+
+## Segurança e handle
+
+O **handle** define **qual conta InfinitePay recebe** o valor. Quem alterar essa configuração no admin da loja pode direcionar pagamentos para outra tag — o mesmo tipo de risco de trocar credenciais em qualquer gateway WooCommerce.
+
+- Restrinja acesso ao painel (`manage_woocommerce`).
+- Confira o handle após cada deploy.
+- O cliente final **não** escolhe nem altera o handle no checkout.
+
+## Estrutura do projeto
 
 ```
 infinitepay/
-├── infinitepay.php
+├── infinitepay.php              # Bootstrap do plugin
+├── readme.txt                   # Formato WordPress.org
+├── AGENTS.md                    # Guia técnico para desenvolvimento
 ├── includes/
 │   ├── class-infinitepay-gateway.php
 │   ├── class-infinitepay-api.php
 │   ├── class-infinitepay-order.php
 │   ├── class-infinitepay-webhook.php
 │   └── class-infinitepay-blocks-support.php
-└── assets/js/infinitepay-blocks.js
+├── assets/js/
+│   └── infinitepay-blocks.js    # Checkout em blocos
+└── languages/                   # Traduções (text domain: infinitepay)
 ```
 
-## Documentação
+## Desenvolvimento
 
-- [InfinitePay — Checkout Integrado](https://www.infinitepay.io/checkout-documentacao)
-- [AGENTS.md](./AGENTS.md) — guia para desenvolvimento e agentes de IA
+Documentação técnica, decisões de arquitetura e endpoints da API estão em [AGENTS.md](./AGENTS.md).
+
+```bash
+# Exemplo: clonar e ativar no ambiente local
+cd wp-content/plugins/infinitepay
+```
+
+## FAQ
+
+**O pagamento acontece dentro do meu site?**  
+Não. O cliente é redirecionado para o checkout InfinitePay. Isso segue o Checkout Integrado documentado oficialmente.
+
+**Funciona com checkout em blocos?**  
+Sim. O plugin registra integração com WooCommerce Blocks.
+
+**Preciso de API key?**  
+No fluxo documentado do Checkout Integrado, a loja se identifica pelo **handle** (InfiniteTag). Não há secret no payload público usado por este plugin.
+
+**E se o webhook não chegar?**  
+O retorno na página de pedido recebido (com parâmetros da InfinitePay) tenta confirmar o pagamento pelo mesmo fluxo de `payment_check`.
+
+## Links úteis
+
+- [Documentação InfinitePay — Checkout Integrado](https://www.infinitepay.io/checkout-documentacao)
+- [WooCommerce — Payment Gateway API](https://developer.woocommerce.com/docs/features/payments/payment-gateway-api/)
 
 ## Licença
 
-GPL-2.0-or-later — veja [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html).
+Este projeto está licenciado sob **GPL-2.0-or-later**.  
+Veja [GNU GPL v2](https://www.gnu.org/licenses/gpl-2.0.html).
 
 ## Autor
 
-**Léo Felipe** — [WhatsApp](https://wa.me/5514981453663)
+**Léo Felipe**  
+Contato: [WhatsApp](https://wa.me/5514981453663)
+
+---
+
+Desenvolvido para integrar WooCommerce ao ecossistema InfinitePay de forma simples e alinhada à documentação oficial.
