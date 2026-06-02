@@ -3,6 +3,8 @@ name: Build plugin ZIP
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
