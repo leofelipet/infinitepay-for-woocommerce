@@ -21,6 +21,7 @@ Gateway de pagamento WooCommerce que integra o **Checkout Integrado** da Infinit
 | Status | `pending` → `processing` ou `completed` (pedidos só virtuais/download) |
 | Testes | Mesmo handle de produção com valores baixos |
 | Identidade | Plugin **InfinitePay para WooCommerce**, slug `infinitepay`, gateway id `infinitepay` |
+| Autor | **Léo Felipe** — https://wa.me/5514981453663 |
 
 ### Fora de escopo no MVP
 

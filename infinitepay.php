@@ -1,17 +1,25 @@
 <?php
 /**
- * Plugin Name: InfinitePay para WooCommerce
- * Plugin URI: https://www.infinitepay.io/checkout-documentacao
- * Description: Gateway de pagamento WooCommerce para o Checkout Integrado InfinitePay.
- * Version: 1.0.0
- * Author: EJABR
- * Requires at least: 5.8
- * Requires PHP: 7.4
+ * Plugin Name:       InfinitePay para WooCommerce
+ * Plugin URI:        https://www.infinitepay.io/checkout-documentacao
+ * Description:       Aceite PIX e cartão no WooCommerce com o Checkout Integrado InfinitePay. Redirect seguro, webhook e compatível com checkout em blocos e HPOS.
+ * Version:           1.0.0
+ * Requires at least: 6.0
+ * Requires PHP:      7.4
+ * Requires Plugins:  woocommerce
+ * Author:            Léo Felipe
+ * Author URI:        https://wa.me/5514981453663
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       infinitepay
+ * Domain Path:       /languages
  * WC requires at least: 7.0
- * WC tested up to: 9.0
- * Text Domain: infinitepay
- * License: GPL-2.0-or-later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * WC tested up to:    9.0
+ *
+ * InfinitePay para WooCommerce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
  *
  * @package InfinitePay
  */
